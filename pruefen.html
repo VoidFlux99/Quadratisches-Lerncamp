@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lösungswörter prüfen</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="app">
+    <h1>Lösungswörter prüfen</h1>
+    <p class="sub">Für den Nachhilfelehrer: Lösungswörter einfügen (eins pro Zeile oder mit Leerzeichen getrennt).</p>
+    <textarea id="eingabe" rows="5" placeholder="BINOM-K7QXA&#10;PARABEL-…"></textarea>
+    <div class="reihe"><button class="knopf" id="los">Prüfen</button></div>
+    <table id="tabelle" hidden>
+      <thead><tr><th>Wort</th><th>Tag</th><th>Punkte</th><th>Tipps</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <p id="summe" class="meldung"></p>
+  </main>
+  <script src="aufgaben.js"></script>
+  <script src="code.js"></script>
+  <script>
+    document.getElementById("los").addEventListener("click", () => {
+      const woerter = document.getElementById("eingabe").value.split(/[\s,;]+/).filter(Boolean);
+      const body = document.querySelector("#tabelle tbody");
+      body.innerHTML = "";
+      let p = 0, t = 0, n = 0;
+      for (const w of woerter) {
+        const d = lcDecode(w);
+        const tr = document.createElement("tr");
+        const zelle = (txt, kl) => { const td = document.createElement("td"); td.textContent = txt; if (kl) td.className = kl; tr.appendChild(td); };
+        zelle(w.toUpperCase());
+        if (!d) { zelle("ungültig", "falsch"); zelle("–"); zelle("–"); }
+        else {
+          const tag = TAGE[d.tag - 1];
+          zelle(`Tag ${d.tag} · ${tag.titel} (${tag.datum})`);
+          zelle(`${d.punkte} / ${tag.aufgaben.length * 10}`, "richtig");
+          zelle(String(d.tipps));
+          p += d.punkte; t += d.tipps; n++;
+        }
+        body.appendChild(tr);
+      }
+      document.getElementById("tabelle").hidden = woerter.length === 0;
+      document.getElementById("summe").textContent = n ? `Gültig: ${n} Wörter · zusammen ${p} Punkte, ${t} Tipps` : "";
+    });
+  </script>
+</body>
+</html>
